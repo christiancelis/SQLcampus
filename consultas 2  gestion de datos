@@ -1,0 +1,139 @@
+-- sesion GEstion de datos
+
+
+-- crear tablas temporales
+
+/*
+	ejemplo 5 -----
+*/
+create table  expvida as
+select Name, Continent, LifeExpectancy 
+from country
+where Continent = "Europe" and LifeExpectancy is not null
+order by  LifeExpectancy
+limit 5;
+
+
+select * from expvida
+order by   LifeExpectancy desc, name desc;
+
+
+
+-- ejercicio
+
+-- crear una tabla temporal llamada empleados_departamento_x la cual contendra la informacion
+-- de los empleados (nombre salario) de la tabla empleados
+-- estos empleados trabajan en el departamento_x y ganan mas de $1.200.000.
+
+/*
+	create table  as empleados_departamento_x 
+    select name , salario , departamento
+    from empleados 
+    where salario > 1200000 and departamento= "X"
+    
+    ----------------------------
+
+*/
+
+drop table tempPais;
+
+create table tempPais as
+select Name , Population
+from country;
+
+select * from tempPais
+where Population <= 100000000;
+
+
+-- mostrar estructura describe  --desc <nombre de la tabla >
+describe tempPais;
+
+
+
+-- Relaciones entre tablas
+
+-- Relacion de uno a muchos
+
+
+
+create database library;
+
+use library;
+
+create table book (
+	id int primary key,
+    titulo varchar(100),
+    autor varchar(100)
+);
+
+create table Prestamo(
+	id_prestamo int primary key,
+    id_libro int,
+    fecha_prestamo date,
+    fecha_devolucion date,
+    foreign key (id_libro) references book(id)
+    );
+    
+    
+    
+    -- relacion de muchos a muchos
+    
+    create table estudiante(
+		id int primary key,
+		nombre varchar(100)
+    );
+    
+    
+    create table curso(
+		id int primary key,
+        nombre varchar(100),
+        descripcion text
+    );
+    
+    
+    create table inscripcion(
+		id_estudiante int,
+        id_curso int,
+        fechainscripcion date,
+        primary key(id_estudiante,id_curso),
+		foreign key(id_estudiante) references estudiante(id),
+        foreign key(id_curso) references curso(id)
+    );
+    
+    
+    -- ejercicio
+    
+    
+    create database mundo;
+    
+    use mundo;
+    
+    create table pais(
+		id int primary key,
+        nombre varchar(20),
+        continente varchar(50),
+        poblacion int
+    );
+    
+    
+    create table ciudad(
+		id int primary key,
+        id_pais int,
+        nombre varchar(20),
+        foreign key(id_pais) references pais(id)
+    );
+
+
+create table idioma(
+	id int primary key,
+    idioma varchar(50)
+);
+
+create table idiomapais(
+	id_idioma int ,
+    id_pais int,
+    primary key(id_idioma,id_pais),
+    foreign key(id_idioma) references idioma(id),
+    foreign key(id_pais) references pais(id)
+);
+
