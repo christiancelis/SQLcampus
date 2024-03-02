@@ -1,0 +1,32 @@
+use world;
+
+select * from country;
+
+select * from city;
+
+select * from countrylanguage;
+
+select Name, Population  from country
+order by Population desc
+limit 1
+;
+select Name, Population from city
+where Population < 1000000
+order by Population asc, Name asc;
+
+select Continent, Name , Population from country
+where Continent ="South America"
+order by Population desc
+limit 3;
+
+select CountryCode, Language, Percentage, isOfficial
+from countrylanguage
+where CountryCode= "COL" and isOfficial="F"
+order by Percentage asc;
+
+select Name, Continent, LifeExpectancy 
+from country
+where Continent = "Europe" and LifeExpectancy <> "NULL"
+order by  LifeExpectancy asc, Name asc
+limit 5;
+
