@@ -1,0 +1,87 @@
+-- revision de estructura de una tabla
+
+-- describe nombretabla
+-- show columns from
+
+--
+use mundo; 
+show columns from pais;
+
+-- show create table -> muestra la estructura de como se creó la tabla.
+
+use library;
+
+show create table inscripcion;
+
+-- show table status -> informacion general de la tabla
+
+show table status like "inscripcion";
+
+
+-- informacion detallada
+
+SELECT *
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = "inscripcion";
+
+
+SELECT *
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA = "library";
+
+-- funciones y comandos en campos de MYSQL
+
+-- CONCAT: concatena dos o mas cadenas de texto
+use world;
+
+select concat(name, " ", region) as Ubicacion
+from country
+limit 5;
+-- 
+
+-- upper
+
+select upper(concat(name, " ", region)) as Ubicacion
+from country
+limit 5;
+
+-- lower convierte una cadena a minuscula
+
+select lower(concat(name, " ", region)) as Ubicacion
+from country
+limit 5;
+
+-- length: devuelve la longitud de una cadena
+
+select (concat(name, " ", region)) as Ubicacion, length(concat(name, " ", region)) as longitud
+from country
+limit 5;
+
+select Name as nombre , length(Name) as longitud from country
+order by longitud desc
+limit 3;
+
+-- substring() extrae una parte de una cadena
+
+select SUBSTRING(concat(name, " ", region),1,3) as Ubicacion, length(concat(name, " ", region)) as longitud
+from country
+limit 5;
+
+-- LOCATE -> ENCUENTRA LA POSICION DE UNA CADENA:
+select SUBSTRING(concat(name, " ", region),1,3) as Ubicacion, length(concat(name, " ", region)) as longitud,
+ lOCATE("g",SUBSTRING(concat(name, " ", region),1,3)) as pos_g
+from country
+limit 5;
+
+
+-- construya un listado con el primer nombre de los primeros paises con nombres compuestos.
+
+select SUBSTRING(Name,1,locate(" ", Name)) 
+from country
+where length(SUBSTRING(Name,1,locate(" ", Name)) ) <> 0
+order by name;
+
+-- TRIM: QUITA ESPACIOS ANTES Y DESPUES.
+-- rtrim al final
+-- ltrim a la izquierda.
+
