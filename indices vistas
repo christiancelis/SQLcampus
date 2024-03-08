@@ -1,0 +1,104 @@
+use world;
+
+select distinct c.Name, cl.countrycode
+from countrylanguage as cl
+left join country as c on c.code= cl.countrycode
+where cl.countrycode not in (select distinct countrycode
+from countrylanguage
+where isofficial="T" ) ;
+
+
+select *
+from countrylanguage
+where countrycode="ATA";
+
+-- indices mejoran el rendimiento de las consultas-
+
+/*
+	create index index_name
+    on table_name (column1,column2)
+*/
+
+-- indice simple
+
+create index idx_name on country(name);
+
+-- index compuestos
+
+create index idx_name on country(name, code);
+
+
+-- indices unicos
+
+-- create unique index
+
+-- borrar un indice
+drop index idx_name on country;
+
+-- Indice unico sobre el nombre
+create unique index idx_unq_name on country(name);
+
+
+-- indices de texto completo
+
+-- permiten busquedas eficientes de texto completo en campos loargos
+
+-- create fulltext index idx_article_content on articles(content);
+
+
+-- vistas 
+
+-- objetos de la base de datos, representan una consulta guardadoa
+
+/*
+create view vista_detalles_usuario As
+select u.id , u.nombre, d.direccion, d.telefono
+from  usuarios u
+join detalles_usuario d on u.id = d.usuario_id
+*/
+create view view_populationCity as
+    select *
+        from (
+            select Name as cityName, Population, CountryCode
+            from city
+            order by Population desc
+        ) as ciudades
+
+        inner join (
+            select Code, Name as CountryName, Continent
+                from country
+        ) as countryFilter on ciudades.CountryCode = countryFilter.Code
+
+        where Continent <> 'Oceania' and Continent <> 'Antarctica';
+
+
+-- sintaxis para cambiar una vista
+/*
+create or replace view nombre_vista as
+ select columnas
+ from tablas
+ where condiciones;
+*/
+
+-- declarar una variable set @continent := "Africa";
+
+
+
+select cl.language, c.Name,
+	case
+		when cl.isofficial = "F" then "No oficial"
+        else "Oficial"
+        end as tipo2,
+        case
+        when cl.percentage < 0.3 then "Poco hablado"
+        when cl.percentage between 0.4 and 49 then "Medianamente hablado"
+		else "Muy hablado"
+        end as Frecuencia
+from countrylanguage as cl
+inner join country as c on c.code=cl.countrycode
+where cl.countrycode="COL";
+
+        
+        
+        
+        
