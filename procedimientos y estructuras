@@ -1,0 +1,258 @@
+
+-- procedimientos almacenados
+
+-- comandos que se guardan en el servidor de la bd, funciones- se guardan por el nombre-
+
+-- beneficios _> eficiencia, optimizaCION, sEGURIDAD, 
+-- modularidad, Mayor rendimiento,Seguridad.
+
+/*
+create procedure nombre_procedimiento(paramentros)
+begin
+
+end
+
+-- parametros de entrada y salida
+in -> se le pasa al procedimiento
+out puede cambiar el valor del parametros y este cambio se refleja del procedimiento
+inout combinacion de in y out, puede ser pasado y modificador dentro del mismo.
+*/
+
+-- ejemplo 
+
+delimiter //
+create procedure CalcularTotal(in precio decimal(10,2),in cantidad int, out total decimal(10,2))
+begin
+	set total = precio * cantidad;
+end//
+
+delimiter ;
+
+set @total =0;
+call tienda.CalcularTotal(10,5,@total);
+select @total;
+
+
+-- ----------------------------------
+
+create database base_ejemplo;
+use base_ejemplo;
+
+drop table producto;
+
+create table producto(
+	id int not null auto_increment,
+    nombre varchar(20) not null,
+    estado varchar(20) not null default "disponible",
+    precio float not null default 0.0,
+    primary key(id)
+);
+
+drop procedure obtenerProductosPorEstado;
+
+delimiter $$
+
+create procedure obtenerProductosPorEstado(in nombre_estado varchar(255))
+begin
+	select * from producto where estado = nombre_estado;
+end$$
+
+delimiter ;
+
+
+call obtenerProductosPorEstado("agotado");
+
+delimiter $$
+create procedure contarProductosPorEstado(in nombre_estado varchar(255), out numero int)
+begin
+	select count(id) into numero from producto where estado = nombre_estado;
+end$$
+
+delimiter ;
+
+set @cantidad_disponible = 0;
+call contarProductosPorEstado("disponible",@cantidad_disponible);
+select @cantidad_disponible as productoDisponible;
+
+
+delimiter $$
+
+create procedure venderProducto(inout beneficio int(255), in id_producto int)
+begin
+	declare precio_producto float;
+    select precio into precio_producto from producto
+    where id=id_producto;
+		set beneficio = beneficio + precio_producto;
+end$$
+
+delimiter ;
+
+set @beneficio_acumulado = 0;
+call venderProducto(@beneficio_acumulado,1);
+
+call venderProducto(@beneficio_acumulado,2);
+
+
+select @beneficio_acumulado as BeneficioTotal;
+use world;
+drop procedure listarciudadesdePais;
+
+delimiter $$
+create procedure listarciudadesdePais(in nombrePais varchar(100))
+begin
+	select c.name
+    from country as ct
+    inner join city as c on c.countrycode = ct.code 
+    where upper(ct.name)= upper(nombrePais);
+end $$
+ delimiter ;
+ 
+ call listarciudadesdePais("Colombia");
+
+delimiter $$
+-- ---------------------------------------
+drop procedure listarciudadesdePais;
+
+delimiter $$
+create procedure listarciudadesdePais(in nombrePais varchar(100), out numerociudades int)
+begin
+	
+	select count(c.name) into numerociudades
+    from country as ct
+    inner join city as c on c.countrycode = ct.code 
+    where upper(ct.name)= upper(nombrePais);
+	
+end$$
+
+delimiter ;
+
+set @nciudades=0;
+call listarciudadesdePais("Colombia",@nciudades);
+select @nciudades;
+
+
+
+-- ------------
+
+
+
+drop procedure poblaciontotal;
+select * from countrylanguage;
+delimiter $$
+create procedure poblaciontotal(inout pt decimal, in nombrePais varchar(100))
+begin
+    declare contador decimal; 
+	select if(ct.population is null,0,ct.population) as population into contador 
+    from country as ct
+    inner join countrylanguage as c on c.countrycode = ct.code 
+    where upper(ct.name)= upper(nombrePais) and c.language="Spanish" and c.IsOfficial="T";
+		set pt = pt + contador;
+end$$
+
+delimiter ;
+
+
+set @tp=0 ;
+
+call poblaciontotal(@tp,"Colombia");
+call poblaciontotal(@tp,"Francia");
+call poblaciontotal(@tp,"Peru");
+
+select @tp;
+
+
+
+
+
+
+
+select (case when ct.population  then ct.population = 0 else ct.population end) as p
+    from country as ct
+    inner join countrylanguage as c on c.countrycode = ct.code 
+    where upper(ct.name)= upper("Francia") and c.language="Spanish" and c.IsOfficial="T";
+
+
+-- estructuras para trabajar con procedimientos almacenados
+
+/*
+	if condicion then
+    else
+    end if;
+*/
+
+
+-- estructura ciclica loop
+
+
+/*
+	-- acciones a repetir
+loop´    
+    if condicion_salida then
+		leave loop _label
+	end if;
+end Loop loop_leave
+*/
+
+-- repeat es similar al do while
+
+/*
+	repeat
+		-- acciones a repetir        
+	until condicion si la condicion es falsa sale;
+    end repeat
+*/
+
+
+-- while 
+
+
+/*
+	while condicion do
+		acciones a repetir
+    end while
+*/
+
+-- case
+
+/*
+	case expresion
+		when valor1 then
+			accion
+		when calor2 then
+			accion
+		else
+			accion
+    end case;
+*/
+
+
+
+-- manejo de excepciones
+-- declare handler 
+
+-- 2 tipos de handler -> continue ,  exit
+
+use tienda;
+
+delimiter $$
+create procedure InsertarFabricante(in id int, in nombre varchar(100))
+begin
+	declare exit handler for 1062
+    select "Error: Fabricante ya existe";
+    
+    insert into fabricante values(id,nombre);
+end$$
+
+
+call InsertarFabricante(10,"Motorola");
+
+select * from fabricante;
+
+
+
+
+
+
+
+
+
