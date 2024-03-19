@@ -1,0 +1,72 @@
+
+-- Seguridad y permisos
+
+-- ciertos usuarios puedan acceder a la informacion
+-- dos usuarios .. root, 
+-- anonimo: permisos ilimitados;
+
+
+select user , host from mysql.user;
+create user "cacas" @localhost identified by "cacas2024";
+grant select on pruebas.* to "cacas" @localhost;
+show grants for "cacas" @localhost;
+-- grant = permisos;
+
+-- delete grant
+
+drop user "cacas" @localhost;
+
+grant insert on pruebas.empleados to "cacas" @localhost; 
+revoke insert on pruebas.empleados from "cacas" @localhost; 
+
+
+-- limitar a cierto usuario a una cantidad de consultas por hora;
+
+grant usage on pruebas.* to "cacas" @localhost;
+alter user "cacas" @localhost with max_queries_per_hour 100;
+
+
+
+-- eliminar usuarios anonimos
+
+
+select user , host
+from mysql.user
+where user = "";
+
+drop user ""@localhost;
+
+alter user "cacas"@localhost identified by "cacas20243";
+revoke all privileges on *.*  from "cacas"@localhost;
+grant select on pruebas.* to "cacas"@localhost;
+
+create user "admin"@"%" identified by "campus2024";
+grant all privileges on *.* to "admin"@"%"  with grant option;
+
+-- usuario que solo permita consultar ciertas consultas
+
+create user camilo@localhost identified by "bucaroscampeon";
+grant select (id, nombre) on pruebas.clientes to camilo@localhost;
+
+-- recarga los privilegios;
+
+flush privileges;
+
+-- 
+-- 
+
+
+-- ejecutar comandos de manera segura
+-- prepare execute;
+
+select * from empleados where id=1;
+use world;
+
+
+
+prepare stmt from "select * from city where countrycode = ?"; 
+set @pais = "COL";
+EXECUTE stmt using @pais;
+-- borrar una consulta preparada;
+deallocate prepare stmt;
+
