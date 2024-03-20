@@ -1,0 +1,172 @@
+-- Active: 1710890573475@@127.0.0.1@3306 Mysql
+
+use world;
+
+
+-- optimizacion de consultas
+
+select * from country
+where name like "_%san%";
+
+select *
+from country
+where name like "%a%" and name like "%e%" and name like "%i%" and name like "%o%" and name like "%u%";
+
+select *
+from country
+where trim(name) like "% %";
+
+
+-- Comodines: % _
+
+-- Listar los paises que no contengan la expresion usa en su nombre
+-- listar todos los paises donde el continente sea america
+
+
+select name
+from country
+where name not like "%USA%";
+
+
+select name 
+from country
+where continent like "%America%"
+
+
+--  optimizacion de consultas; con indices;
+
+-- create index idx_autor on libros(Autor);
+
+-- indices compuestos
+--  create index idx_anio_autor on Libros (Anio,Autor)
+
+-- evitar subconsultas innecesarias;
+
+los joins son mejores que las subconsultas;
+select distinc Usuario.nombre
+from Usuario
+join Compras on Usuario.id_usurio = Compras.id_usuario;
+
+
+-- caching de consultas;
+-- Nosql redis o Memcached
+
+#seudocodigo en phyton con uso de cache;
+
+noticias_cacheadas = obtener_de_cache("ultimas noticias")
+
+if noticias_cacheadas is NONE 
+    noticias = ejecutar_consulta_sql("select *")
+    guardar_en_cache("ultimas_noticias",noticias, tiempo_expiracion)
+else 
+    noticias = noticias_cacheadas;
+
+
+use pruebas;
+
+
+create table employees(
+    id int not null AUTO_INCREMENT PRIMARY KEY,
+    fname VARCHAR(25) NOT NULL,
+    lname VARCHAR(25) NOT NULL,
+    store_id int not null,
+    department_id int not null
+
+) PARTITION BY RANGE(id)(
+    PARTITION p0 VALUES LESS THAN (5),
+    PARTITION p1 VALUES LESS THAN (10),
+    PARTITION p2 VALUES LESS THAN (15),
+    PARTITION p3 VALUES LESS THAN MAXVALUE
+);
+
+INSERT INTO employees VALUES
+    (NULL, 'Bob', 'Taylor', 3, 2), (NULL, 'Frank', 'Williams', 1, 2),
+    (NULL, 'Ellen', 'Johnson', 3, 4), (NULL, 'Jim', 'Smith', 2, 4),
+    (NULL, 'Mary', 'Jones', 1, 1), (NULL, 'Linda', 'Black', 2, 3),
+    (NULL, 'Ed', 'Jones', 2, 1), (NULL, 'June', 'Wilson', 3, 1),
+    (NULL, 'Andy', 'Smith', 1, 3), (NULL, 'Lou', 'Waters', 2, 4),
+    (NULL, 'Jill', 'Stone', 1, 4), (NULL, 'Roger', 'White', 3, 2),
+    (NULL, 'Howard', 'Andrews', 1, 2), (NULL, 'Fred', 'Goldberg', 3, 3),
+    (NULL, 'Barbara', 'Brown', 2, 3), (NULL, 'Alice', 'Rogers', 2, 2),
+    (NULL, 'Mark', 'Morgan', 3, 3), (NULL, 'Karen', 'Cole', 3, 2);
+
+
+
+SELECT * from employees
+PARTITION(p1);
+
+
+SELECT * from employees
+PARTITION(p0,p2)
+where lname like "s%";
+
+
+
+select id, CONCAT(fname," ",lname) as name 
+from employees
+partition(p0)
+order by lname;
+
+--- 
+
+-- transacciones;
+
+--operaciones que se concideran o se tratan como si fueran una sola;
+
+--. si falla se deshace;
+start TRANSACTION;
+insert into employees values(null,"yulieth","Taylor",3,2);
+commit;
+
+
+create table orden(
+    idOrden int primary key AUTO_INCREMENT,
+    estado varchar(50)
+);
+
+
+create table factura(
+    id_factura int primary key,
+    id_orden int,
+    cantidad int,
+    Foreign Key (id_orden) REFERENCES orden(idOrden)
+);
+
+start transaction;
+insert into orden values(100,"completado");
+insert into factura values(1,101,3);
+commit;
+
+select * from orden;
+
+ROLLBACK;
+
+
+use ventas;
+
+
+-- 1 --
+
+select *
+from cliente as c
+inner join pedido as p on p.id_cliente = c.id 
+where year(p.fecha) = "2017" and p.total between 300 and 1000;
+
+-- 2
+
+select c.nombre, c.apellido1 , c.apellido2
+from comercial as c
+inner join pedido as p on p.id_comercial= c.id
+where concat(c.nombre, " ", c.apellido1," ", c.apellido2) = "María Santana Moreno";
+
+
+
+select concat(c.nombre, " ", c.apellido1," ", c.apellido2) as "Nombre Cliente"
+from cliente as c
+inner join pedido as p on p.id_cliente = c.id
+where p.id_comercial = (select id from comercial
+                where concat(nombre, " ", apellido1," ", apellido2) = "Daniel Sáez Vega")
+;
+
+
+
